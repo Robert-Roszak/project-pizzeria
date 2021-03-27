@@ -11,7 +11,7 @@
         "init:gitignore:custom": "echo \"dist\" >> .gitignore",
         "test": "npm-run-all test:*",
         "test:html": "globstar nu-html-checker dist/*.html",
-        "test:js": "eslint src/js/",
+        "test:js": "eslint src/js/ --fix",
         "test:scss": "stylelint src/sass/",
         "build": "npm-run-all build:* test",
         "build:clean": "rm -r dist && mkdirp dist",
@@ -28,7 +28,6 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "dependencies": {},
     "devDependencies": {
         "autoprefixer": "^10.2.4",
         "browser-sync": "^2.26.3",
@@ -42,7 +41,11 @@
         "onchange": "^5.2.0",
         "postcss": "^8.2.6",
         "postcss-cli": "^8.3.1",
-        "stylelint": "^9.10.1",
+        "stylelint": "^13.12.0",
         "stylelint-scss": "^3.5.4"
+    },
+    "dependencies": {
+        "extend": "^3.0.2",
+        "mime": "^1.4.1"
     }
 }
