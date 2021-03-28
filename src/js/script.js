@@ -84,6 +84,7 @@
       thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
+      thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
     }
 
     initAccordion () {
@@ -119,28 +120,33 @@
     }
 
     processOrder () {
-      const thisProduct = this;
-      const formData = utils.serializeFormToObject(thisProduct.form);
+      const thisProduct = this,
+        formData = utils.serializeFormToObject(thisProduct.form);
       console.log('formData: ', formData);
       let price = thisProduct.data.price;
 
       for(let paramId in thisProduct.data.params) {
         const param = thisProduct.data.params[paramId];
-        console.log(paramId, param);
-
+        //console.log(paramId, param);
         for(let optionId in param.options) {
-          const option = param.options[optionId];
-          console.log(optionId, option);
-          // jak bedzie dzialac funkcja bez formData[paramId]? czy ten drugi paramert nie jest jednoczniesnie tym pierwszym tylko bardziej rozbudowanym?
-          if(formData[paramId] && formData[paramId].includes(optionId)) {
+          const option = param.options[optionId],
+            //console.log(optionId, option);
+            imageParm = '.'+paramId+'-'+optionId,
+            imageSelector = thisProduct.imageWrapper.querySelector(imageParm),
+            // jak bedzie dzialac funkcja bez formData[paramId]? czy ten drugi paramert nie jest jednoczniesnie tym pierwszym tylko bardziej rozbudowanym?
+            optionSelected = formData[paramId] && formData[paramId].includes(optionId);
+
+          if (imageSelector) {
+            if (!optionSelected) imageSelector.classList.remove(classNames.menuProduct.imageVisible);
+            else if (optionSelected) imageSelector.classList.add(classNames.menuProduct.imageVisible);
+          }
+          if (optionSelected) {
             //option.default jest typem boolean, da sie porownac go w jakis sposob option.default != 0 zamiast !option.default?
             if(!option.default) {
               price += option.price;
-              console.log('price plus: ', price);
             }
           } else if (option.default) {
-              price -= option.price;
-              console.log('price minus: ', price);
+            price -= option.price;
           }
         }
       }
