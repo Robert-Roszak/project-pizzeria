@@ -138,7 +138,7 @@
 
           if (imageSelector) {
             if (!optionSelected) imageSelector.classList.remove(classNames.menuProduct.imageVisible);
-            else if (optionSelected) imageSelector.classList.add(classNames.menuProduct.imageVisible);
+            else imageSelector.classList.add(classNames.menuProduct.imageVisible);
           }
           if (optionSelected) {
             //option.default jest typem boolean, da sie porownac go w jakis sposob option.default != 0 zamiast !option.default?
