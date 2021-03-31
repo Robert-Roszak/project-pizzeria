@@ -184,7 +184,6 @@
 
     initActions() {
       const thisWidget = this;
-      console.log('thisWidget.input.value: ', thisWidget.input.value);
       // dlaczego nie dzialalo w ten sposob? thisWidget.input.addEventListener('change', thisWidget.setValue(thisWidget.input.value));
       thisWidget.input.addEventListener('change', function() {
         const inputValue = parseInt(thisWidget.input.value);
@@ -195,7 +194,7 @@
         else if (inputValue >= settings.amountWidget.defaultMax) {
           thisWidget.setValue(settings.amountWidget.defaultMax);
         }
-        else thisWidget.setValue(thisWidget.input.value);
+        else thisWidget.setValue(inputValue);
       });
 
       thisWidget.linkDecrease.addEventListener('click', function(event) {
