@@ -43,7 +43,7 @@
   const settings = {
     amountWidget: {
       defaultValue: 1,
-      defaultMin: 1,
+      defaultMin: 0,
       defaultMax: 9,
     }
   };
@@ -80,7 +80,6 @@
 
     getElements(){
       const thisProduct = this;
-      // nie powinno byc ponizej deklaracji stalej? wiem ze czesc z nich byla deklarowana wczesniej, ale np ostatnia nie?
       thisProduct.accordionTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
       thisProduct.form = thisProduct.element.querySelector(select.menuProduct.form);
       thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
@@ -93,6 +92,9 @@
     initAmountWidget () {
       const thisProduct = this;
       thisProduct.amountWidget = new amountWidget(thisProduct.amountWidgetElem);
+      thisProduct.amountWidgetElem.addEventListener('updated', function() {
+        thisProduct.processOrder();
+      });
     }
 
     initAccordion () {
@@ -136,21 +138,18 @@
       for(let paramId in thisProduct.data.params) {
         const param = thisProduct.data.params[paramId];
         //console.log(paramId, param);
-        //param.options - skad sie wzielo to .options?
         for(let optionId in param.options) {
           const option = param.options[optionId],
             //console.log(optionId, option);
             imageParm = '.'+paramId+'-'+optionId,
             imageSelector = thisProduct.imageWrapper.querySelector(imageParm),
-            // jak bedzie dzialac funkcja bez formData[paramId]? czy ten drugi paramert nie jest jednoczniesnie tym pierwszym tylko bardziej rozbudowanym?
-            optionSelected = formData[paramId] && formData[paramId].includes(optionId);
+            optionSelected = formData[paramId].includes(optionId);
 
           if (imageSelector) {
             if (!optionSelected) imageSelector.classList.remove(classNames.menuProduct.imageVisible);
             else imageSelector.classList.add(classNames.menuProduct.imageVisible);
           }
           if (optionSelected) {
-            //option.default jest typem boolean, da sie porownac go w jakis sposob option.default != 0 zamiast !option.default?
             if(!option.default) {
               price += option.price;
             }
@@ -159,18 +158,19 @@
           }
         }
       }
+      price *= thisProduct.amountWidget.value;
       thisProduct.priceElem.innerHTML = price;
     }
   }
 
   class amountWidget {
-    // konstruktor jest intergralna i obozwiazkowa czescia klasy? czy to tylko "nazwa"?
     constructor(element) {
       const thisWidget = this;
       console.log('AmountWidget', thisWidget);
       console.log('constructor arguments', element);
       thisWidget.getElements(element);
-      thisWidget.setValue(thisWidget.input.value);
+      thisWidget.setValue(settings.amountWidget.defaultValue);
+      thisWidget.initActions();
     }
 
     getElements(element) {
@@ -182,18 +182,58 @@
       thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
     }
 
+    initActions() {
+      const thisWidget = this;
+      console.log('thisWidget.input.value: ', thisWidget.input.value);
+      // dlaczego nie dzialalo w ten sposob? thisWidget.input.addEventListener('change', thisWidget.setValue(thisWidget.input.value));
+      thisWidget.input.addEventListener('change', function() {
+        const inputValue = parseInt(thisWidget.input.value);
+
+        if (inputValue <= settings.amountWidget.defaultMin) {
+          thisWidget.setValue(settings.amountWidget.defaultMin);
+        }
+        else if (inputValue >= settings.amountWidget.defaultMax) {
+          thisWidget.setValue(settings.amountWidget.defaultMax);
+        }
+        else thisWidget.setValue(thisWidget.input.value);
+      });
+
+      thisWidget.linkDecrease.addEventListener('click', function(event) {
+        event.preventDefault();
+        if (thisWidget.value > settings.amountWidget.defaultMin) {
+          thisWidget.value -= 1;
+          thisWidget.setValue(thisWidget.value);
+        }
+        else thisWidget.setValue(thisWidget.value);
+      });
+
+      thisWidget.linkIncrease.addEventListener('click', function(event){
+        event.preventDefault();
+        if (thisWidget.value < settings.amountWidget.defaultMax) {
+          thisWidget.value += 1;
+          thisWidget.setValue(thisWidget.value);
+        }
+        else thisWidget.setValue(thisWidget.value);
+      });
+    }
+    // jeszcze raz.. o co chodzi z tym announce? jak to dziala, ze przekazuje cene?
+    announce() {
+      const thisWidget = this;
+      const event = new Event('updated');
+      thisWidget.element.dispatchEvent(event);
+    }
+
     setValue(value) {
       const thisWidget = this;
-      console.log('value value', value);
-
       const newValue = parseInt(value);
+
+      console.log('value value', value);
       console.log('newValue value: ', newValue);
-      /* todo: add validation */
-      // nie rozumiem tej walidacji thisWidget.value !== newValue - kiedy te wartosci beda rozne?
-      //albo czy jesli nawet sa takie same, to czy i tak nie mozna wykonac przypisania?
+
       if(thisWidget.value !== newValue && !isNaN(newValue)) {
         thisWidget.value = newValue;
       }
+      thisWidget.announce();
       thisWidget.input.value = thisWidget.value;
     }
 
