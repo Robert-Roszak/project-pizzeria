@@ -61,6 +61,7 @@
       thisProduct.getElements();
       thisProduct.initAccordion();
       thisProduct.initOrderForm();
+      thisProduct.initAmountWidget();
       thisProduct.processOrder();
       //console.log('new product: ', thisProduct);
     }
@@ -79,12 +80,19 @@
 
     getElements(){
       const thisProduct = this;
+      // nie powinno byc ponizej deklaracji stalej? wiem ze czesc z nich byla deklarowana wczesniej, ale np ostatnia nie?
       thisProduct.accordionTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
       thisProduct.form = thisProduct.element.querySelector(select.menuProduct.form);
       thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
+      thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
+    }
+
+    initAmountWidget () {
+      const thisProduct = this;
+      thisProduct.amountWidget = new amountWidget(thisProduct.amountWidgetElem);
     }
 
     initAccordion () {
@@ -122,12 +130,13 @@
     processOrder () {
       const thisProduct = this,
         formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData: ', formData);
+      //console.log('formData: ', formData);
       let price = thisProduct.data.price;
 
       for(let paramId in thisProduct.data.params) {
         const param = thisProduct.data.params[paramId];
         //console.log(paramId, param);
+        //param.options - skad sie wzielo to .options?
         for(let optionId in param.options) {
           const option = param.options[optionId],
             //console.log(optionId, option);
@@ -152,6 +161,42 @@
       }
       thisProduct.priceElem.innerHTML = price;
     }
+  }
+
+  class amountWidget {
+    // konstruktor jest intergralna i obozwiazkowa czescia klasy? czy to tylko "nazwa"?
+    constructor(element) {
+      const thisWidget = this;
+      console.log('AmountWidget', thisWidget);
+      console.log('constructor arguments', element);
+      thisWidget.getElements(element);
+      thisWidget.setValue(thisWidget.input.value);
+    }
+
+    getElements(element) {
+      const thisWidget = this;
+
+      thisWidget.element = element;
+      thisWidget.input = thisWidget.element.querySelector(select.widgets.amount.input);
+      thisWidget.linkDecrease = thisWidget.element.querySelector(select.widgets.amount.linkDecrease);
+      thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+
+    setValue(value) {
+      const thisWidget = this;
+      console.log('value value', value);
+
+      const newValue = parseInt(value);
+      console.log('newValue value: ', newValue);
+      /* todo: add validation */
+      // nie rozumiem tej walidacji thisWidget.value !== newValue - kiedy te wartosci beda rozne?
+      //albo czy jesli nawet sa takie same, to czy i tak nie mozna wykonac przypisania?
+      if(thisWidget.value !== newValue && !isNaN(newValue)) {
+        thisWidget.value = newValue;
+      }
+      thisWidget.input.value = thisWidget.value;
+    }
+
   }
 
   const app = {
