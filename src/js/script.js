@@ -160,6 +160,7 @@
       thisProduct.cartButton.addEventListener('click', function(event){
         event.preventDefault();
         thisProduct.processOrder();
+        thisProduct.addToCart();
       });
     }
 
@@ -192,16 +193,66 @@
           }
         }
       }
+      //czy fragment z cena jednostkowa i cena calkowitka zrobilem wg zadania? mam wrazenie ze znalazlem inny sposob?
+      //w prepareCartProduct moznaby zrobic productSummary.amount * productSummary.priceSingle ale to ciut dluzszy sposob (chyba)
+      thisProduct.priceSingle = price;
       price *= thisProduct.amountWidget.value;
+      thisProduct.price = price;
       thisProduct.priceElem.innerHTML = price;
     }
+
+    prepareCartProductParams() {
+      const thisProduct = this,
+        formData = utils.serializeFormToObject(thisProduct.form),
+        productParams = {};
+
+      for(let paramId in thisProduct.data.params) {
+        const param = thisProduct.data.params[paramId];
+        productParams[paramId] = {
+          label: param.label,
+          options: {}
+        };
+
+        for(let optionId in param.options) {
+          const optionSelected = formData[paramId].includes(optionId);
+          const option = param.options[optionId];
+
+          if (optionSelected) productParams[paramId].options[optionId] = option.label;
+        }
+      }
+      console.log('productparams object issssssssssssssss?????: ', productParams);
+      return productParams;
+    }
+
+    addToCart(){
+      const thisProduct = this;
+      //chyba dalej nie kumam, co to jest to "app" w app.cart.add? thisProduct.cart.add by nie dzialalo?
+      app.cart.add(thisProduct.prepareCartProduct());
+    }
+
+    prepareCartProduct(){
+      const thisProduct = this;
+
+      const productSummary = {};  
+      //console.log('thisproduct.id to jestttttttttttttt: ',thisProduct.amountWidget.value);
+      productSummary.id = thisProduct.id;
+      productSummary.name = thisProduct.data.name;
+      productSummary.amount = thisProduct.amountWidget.value;
+      productSummary.priceSingle = thisProduct.priceSingle;
+      productSummary.price = thisProduct.price;
+      productSummary.params = thisProduct.prepareCartProductParams();
+      console.log('product summaryyyyyyyyy: ', productSummary);
+
+      return productSummary;
+    }
+
   }
 
   class amountWidget {
     constructor(element) {
       const thisWidget = this;
-      console.log('AmountWidget', thisWidget);
-      console.log('constructor arguments', element);
+      //console.log('AmountWidget', thisWidget);
+      //console.log('constructor arguments', element);
       thisWidget.getElements(element);
       thisWidget.setValue(settings.amountWidget.defaultValue);
       thisWidget.initActions();
@@ -260,8 +311,8 @@
       const thisWidget = this;
       const newValue = parseInt(value);
 
-      console.log('value value', value);
-      console.log('newValue value: ', newValue);
+      //console.log('value value', value);
+      //console.log('newValue value: ', newValue);
 
       if(thisWidget.value !== newValue && !isNaN(newValue)) {
         thisWidget.value = newValue;
@@ -291,7 +342,7 @@
 
       thisCart.dom.wrapper = element;
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
-
+      thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
     }
 
     initActions(){
@@ -299,6 +350,20 @@
       thisCart.dom.toggleTrigger.addEventListener('click', function(){
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+    }
+
+    add(menuProduct){
+      const thisCart = this;
+
+      console.log('adding product: ', menuProduct);
+      thisCart.renderInCart(menuProduct);
+    }
+
+    renderInCart(cartItem) {
+      const thisCart = this;
+      const generatedHTML = templates.cartProduct(cartItem);
+      const generatedDOM = utils.createDOMFromHTML(generatedHTML);
+      thisCart.dom.productList.appendChild(generatedDOM);
     }
   }
 
