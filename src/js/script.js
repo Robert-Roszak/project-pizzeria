@@ -303,7 +303,9 @@
     // jeszcze raz.. o co chodzi z tym announce? jak to dziala, ze przekazuje cene?
     announce() {
       const thisWidget = this;
-      const event = new Event('updated');
+      const event = new Event('updated', {
+        bubbles: true
+      });
       thisWidget.element.dispatchEvent(event);
     }
 
@@ -311,8 +313,12 @@
       const thisWidget = this;
       const newValue = parseInt(value);
 
-      //console.log('value value', value);
-      //console.log('newValue value: ', newValue);
+      /*console.log('value', value);
+      console.log('newValue: ', newValue);
+      console.log('thiswidget.value: ', thisWidget.value);
+      console.log('thiswidget.input.value: ', thisWidget.input.value);*/
+
+      // nie przekazuje mi ilosci sztuk do koszyka :( czy to w tym miejscu?
 
       if(thisWidget.value !== newValue && !isNaN(newValue)) {
         thisWidget.value = newValue;
@@ -343,6 +349,11 @@
       thisCart.dom.wrapper = element;
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
       thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
+      thisCart.dom.deliveryWrapper = thisCart.dom.wrapper.querySelector(select.cart.deliveryFee);
+      thisCart.dom.subtotalWrapper = thisCart.dom.wrapper.querySelector(select.cart.subtotalPrice);
+      thisCart.dom.totalPriceWrappers = thisCart.dom.wrapper.querySelectorAll(select.cart.totalPrice);
+      thisCart.dom.totalNumberWrapper = thisCart.dom.wrapper.querySelector(select.cart.totalNumber);
+
     }
 
     initActions(){
@@ -350,20 +361,136 @@
       thisCart.dom.toggleTrigger.addEventListener('click', function(){
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+      thisCart.dom.productList.addEventListener('updated', function(){
+        thisCart.update();
+      });
+      thisCart.dom.productList.addEventListener('remove', function(){
+        thisCart.remove(event.detail.cartProduct);
+      });
     }
 
     add(menuProduct){
       const thisCart = this;
 
       console.log('adding product: ', menuProduct);
-      thisCart.renderInCart(menuProduct);
-    }
-
-    renderInCart(cartItem) {
-      const thisCart = this;
-      const generatedHTML = templates.cartProduct(cartItem);
+      const generatedHTML = templates.cartProduct(menuProduct);
       const generatedDOM = utils.createDOMFromHTML(generatedHTML);
       thisCart.dom.productList.appendChild(generatedDOM);
+      thisCart.products.push(new CartProduct(menuProduct, generatedDOM));
+      console.log('thisCart products: ', thisCart.products);
+      thisCart.update();
+    }
+
+    update(){
+      const thisCart = this;
+      thisCart.deliveryFee = settings.cart.defaultDeliveryFee;
+      thisCart.totalNumber = 0;
+      thisCart.subtotalPrice = 0;
+
+      for (let product of thisCart.products) {
+        thisCart.totalNumber += product.amount;
+        thisCart.subtotalPrice += product.price;
+
+      }
+      // w dalszym ciagu jesli bezposrednio w koszyku zmniejszymy ilosc do 0, pojawia sie delivery fee, dlaczego?
+      //thisCart.totalNumber zawsze rowna sie ilosci produktow podczas klikniecia add to cart
+      if (thisCart.totalNumber !== 0) thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
+      else {
+        thisCart.deliveryFee = 0;
+        thisCart.totalPrice = 0;
+      }
+      
+      console.log('thisCart.totalNumber: ', thisCart.totalNumber);
+      /*console.log('thisCart.subtotalPrice: ', thisCart.subtotalPrice);
+      console.log('thisCart.deliveryFee: ', thisCart.deliveryFee);
+      console.log('thisCart.totalPrice: ', thisCart.totalPrice);*/
+      thisCart.dom.deliveryWrapper.innerHTML = thisCart.deliveryFee;
+      thisCart.dom.subtotalWrapper.innerHTML = thisCart.subtotalPrice;
+      thisCart.dom.totalNumberWrapper.innerHTML = thisCart.totalNumber;
+
+      for (let singleWrapper of thisCart.dom.totalPriceWrappers) {
+        singleWrapper.innerHTML = thisCart.totalPrice;
+      }
+    }
+
+    remove (argument){
+      const thisCart = this;
+      //console.log('argument of remove: ', argument);
+      const indexOfCart = thisCart.products.indexOf(argument);
+      //console.log('indexOfCart: ', indexOfCart);
+      thisCart.products.splice(indexOfCart, 1);
+      //console.log('thisCart.products after remove: ', thisCart.products);
+      // jak to sie dzieje, skad sie wzielo argument.dom.wrapper?
+      argument.dom.wrapper.remove();
+      thisCart.update();
+    }
+
+  }
+
+  class CartProduct {
+    constructor(menuProduct, element){
+      const thisCartProduct = this;
+
+      thisCartProduct.id = menuProduct.id;
+      thisCartProduct.name = menuProduct.name;
+      thisCartProduct.amount = menuProduct.amount;
+      thisCartProduct.priceSingle = menuProduct.priceSingle;
+      thisCartProduct.price = menuProduct.price;
+      thisCartProduct.params = menuProduct.productParams;
+
+      thisCartProduct.getElements(element);
+      thisCartProduct.initAmountWidget();
+      thisCartProduct.initActions();
+    }
+
+    initActions(){
+      const thisCartProduct = this;
+      thisCartProduct.dom.edit.addEventListener('click', function(event) {
+        event.preventDefault();
+        console.log('clicked edit');
+      });
+
+      thisCartProduct.dom.remove.addEventListener('click', function(event){
+        event.preventDefault();
+        console.log('clicked remove');
+        thisCartProduct.remove();
+      });
+    }
+
+    getElements(element){
+      const thisCartProduct = this;
+
+      thisCartProduct.dom = {};
+      thisCartProduct.dom.wrapper = element;
+      thisCartProduct.dom.amountWidget = element.querySelector(select.cartProduct.amountWidget);
+      thisCartProduct.dom.price = element.querySelector(select.cartProduct.price);
+      thisCartProduct.dom.edit = element.querySelector(select.cartProduct.edit);
+      thisCartProduct.dom.remove = element.querySelector(select.cartProduct.remove);
+
+      console.log('thisCartProduct: ', thisCartProduct);
+    }
+
+    initAmountWidget() {
+      const thisCartProduct = this;
+      thisCartProduct.amountWidget = new amountWidget(thisCartProduct.dom.amountWidget);
+      thisCartProduct.dom.amountWidget.addEventListener('updated', function() {
+        console.log('nacisniete ej');
+        // thisCartProduct.amount = thisCartProduct.amountWidget.value;
+        thisCartProduct.price = thisCartProduct.priceSingle * thisCartProduct.amountWidget.value;
+        thisCartProduct.dom.price.innerHTML = thisCartProduct.price;
+      });
+    }
+
+    remove() {
+      const thisCartProduct = this;
+
+      const event = new CustomEvent('remove', {
+        bubbles: true,
+        detail: {
+          cartProduct: thisCartProduct,
+        },
+      });
+      thisCartProduct.dom.wrapper.dispatchEvent(event);
     }
   }
 
