@@ -69,7 +69,7 @@
   const settings = {
     amountWidget: {
       defaultValue: 1,
-      defaultMin: 0,
+      defaultMin: 1,
       defaultMax: 9,
     }, // CODE CHANGED
     // CODE ADDED START
@@ -107,13 +107,9 @@
 
     renderInMenu() {
       const thisProduct = this;
-      // Generate html based on template
       const generatedHTML = templates.menuProduct(thisProduct.data);
-      // create element using utils.createElementFromHTML
       thisProduct.element = utils.createDOMFromHTML(generatedHTML);
-      // find menu container
       const menuContainer = document.querySelector(select.containerOf.menu);
-      // add element to menu
       menuContainer.appendChild(thisProduct.element);
     }
 
@@ -198,8 +194,6 @@
           }
         }
       }
-      //czy fragment z cena jednostkowa i cena calkowitka zrobilem wg zadania? mam wrazenie ze znalazlem inny sposob?
-      //w prepareCartProduct moznaby zrobic productSummary.amount * productSummary.priceSingle ale to ciut dluzszy sposob (chyba)
       thisProduct.priceSingle = price;
       price *= thisProduct.amountWidget.value;
       thisProduct.price = price;
@@ -225,20 +219,19 @@
           if (optionSelected) productParams[paramId].options[optionId] = option.label;
         }
       }
-      console.log('productparams object issssssssssssssss?????: ', productParams);
+      //console.log('productparams object issssssssssssssss?????: ', productParams);
+
       return productParams;
     }
 
     addToCart(){
       const thisProduct = this;
-      //chyba dalej nie kumam, co to jest to "app" w app.cart.add? thisProduct.cart.add by nie dzialalo?
       app.cart.add(thisProduct.prepareCartProduct());
     }
 
     prepareCartProduct(){
-      const thisProduct = this;
-
-      const productSummary = {};  
+      const thisProduct = this,
+        productSummary = {};  
       //console.log('thisproduct.id to jestttttttttttttt: ',thisProduct.amountWidget.value);
       productSummary.id = thisProduct.id;
       productSummary.name = thisProduct.data.name;
@@ -250,7 +243,6 @@
 
       return productSummary;
     }
-
   }
 
   class amountWidget {
@@ -259,7 +251,7 @@
       //console.log('AmountWidget', thisWidget);
       //console.log('constructor arguments', element);
       thisWidget.getElements(element);
-      thisWidget.setValue(settings.amountWidget.defaultValue);
+      thisWidget.setValue(thisWidget.input.value || settings.amountWidget.defaultValue);
       thisWidget.initActions();
     }
 
@@ -274,7 +266,6 @@
 
     initActions() {
       const thisWidget = this;
-      // dlaczego nie dzialalo w ten sposob? thisWidget.input.addEventListener('change', thisWidget.setValue(thisWidget.input.value));
       thisWidget.input.addEventListener('change', function() {
         const inputValue = parseInt(thisWidget.input.value);
 
@@ -289,23 +280,15 @@
 
       thisWidget.linkDecrease.addEventListener('click', function(event) {
         event.preventDefault();
-        if (thisWidget.value > settings.amountWidget.defaultMin) {
-          thisWidget.value -= 1;
-          thisWidget.setValue(thisWidget.value);
-        }
-        else thisWidget.setValue(thisWidget.value);
+        thisWidget.setValue(thisWidget.value - 1);
       });
 
-      thisWidget.linkIncrease.addEventListener('click', function(event){
+      thisWidget.linkIncrease.addEventListener('click', function(event) {
         event.preventDefault();
-        if (thisWidget.value < settings.amountWidget.defaultMax) {
-          thisWidget.value += 1;
-          thisWidget.setValue(thisWidget.value);
-        }
-        else thisWidget.setValue(thisWidget.value);
+        thisWidget.setValue(thisWidget.value + 1);
       });
     }
-    // jeszcze raz.. o co chodzi z tym announce? jak to dziala, ze przekazuje cene?
+
     announce() {
       const thisWidget = this;
       const event = new Event('updated', {
@@ -318,20 +301,12 @@
       const thisWidget = this;
       const newValue = parseInt(value);
 
-      /*console.log('value', value);
-      console.log('newValue: ', newValue);
-      console.log('thiswidget.value: ', thisWidget.value);
-      console.log('thiswidget.input.value: ', thisWidget.input.value);*/
-
-      // nie przekazuje mi ilosci sztuk do koszyka :( czy to w tym miejscu?
-
-      if(thisWidget.value !== newValue && !isNaN(newValue)) {
+      if(thisWidget.value !== newValue && !isNaN(newValue) && newValue >= settings.amountWidget.defaultMin && newValue <= settings.amountWidget.defaultMax) {
         thisWidget.value = newValue;
       }
       thisWidget.announce();
       thisWidget.input.value = thisWidget.value;
     }
-
   }
 
   class Cart {
@@ -343,14 +318,12 @@
       thisCart.getElements(element);
       thisCart.initActions();
       console.log('new cart', thisCart);
-
     }
 
     getElements(element){
       const thisCart = this;
 
       thisCart.dom = {};
-
       thisCart.dom.wrapper = element;
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
       thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
@@ -361,17 +334,19 @@
       thisCart.dom.form = thisCart.dom.wrapper.querySelector(select.cart.form);
       thisCart.dom.phoneWrapper = thisCart.dom.wrapper.querySelector(select.cart.phone);
       thisCart.dom.addressWrapper = thisCart.dom.wrapper.querySelector(select.cart.address);
-
     }
 
     initActions(){
       const thisCart = this;
+
       thisCart.dom.toggleTrigger.addEventListener('click', function(){
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+
       thisCart.dom.productList.addEventListener('updated', function(){
         thisCart.update();
       });
+
       thisCart.dom.productList.addEventListener('remove', function(){
         thisCart.remove(event.detail.cartProduct);
       });
@@ -384,11 +359,11 @@
     }
 
     add(menuProduct){
-      const thisCart = this;
+      const thisCart = this,
+        generatedHTML = templates.cartProduct(menuProduct),
+        generatedDOM = utils.createDOMFromHTML(generatedHTML);
 
       console.log('adding product: ', menuProduct);
-      const generatedHTML = templates.cartProduct(menuProduct);
-      const generatedDOM = utils.createDOMFromHTML(generatedHTML);
       thisCart.dom.productList.appendChild(generatedDOM);
       thisCart.products.push(new CartProduct(menuProduct, generatedDOM));
       console.log('thisCart products: ', thisCart.products);
@@ -404,61 +379,63 @@
       for (let product of thisCart.products) {
         thisCart.totalNumber += product.amount;
         thisCart.subtotalPrice += product.price;
-
       }
-      // w dalszym ciagu jesli bezposrednio w koszyku zmniejszymy ilosc do 0, pojawia sie delivery fee, dlaczego?
-      //thisCart.totalNumber zawsze rowna sie ilosci produktow podczas klikniecia add to cart
+
       if (thisCart.totalNumber !== 0) thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
       else {
         thisCart.deliveryFee = 0;
         thisCart.totalPrice = 0;
       }
-      
-      console.log('thisCart.totalNumber: ', thisCart.totalNumber);
-      /*console.log('thisCart.subtotalPrice: ', thisCart.subtotalPrice);
-      console.log('thisCart.deliveryFee: ', thisCart.deliveryFee);
-      console.log('thisCart.totalPrice: ', thisCart.totalPrice);*/
+
       thisCart.dom.deliveryWrapper.innerHTML = thisCart.deliveryFee;
       thisCart.dom.subtotalWrapper.innerHTML = thisCart.subtotalPrice;
       thisCart.dom.totalNumberWrapper.innerHTML = thisCart.totalNumber;
 
-      for (let singleWrapper of thisCart.dom.totalPriceWrappers) {
-        singleWrapper.innerHTML = thisCart.totalPrice;
-      }
+      for (let singleWrapper of thisCart.dom.totalPriceWrappers) singleWrapper.innerHTML = thisCart.totalPrice;
     }
 
     remove (argument){
-      const thisCart = this;
-      //console.log('argument of remove: ', argument);
-      const indexOfCart = thisCart.products.indexOf(argument);
-      //console.log('indexOfCart: ', indexOfCart);
+      const thisCart = this,
+        indexOfCart = thisCart.products.indexOf(argument);
+
       thisCart.products.splice(indexOfCart, 1);
-      //console.log('thisCart.products after remove: ', thisCart.products);
-      // jak to sie dzieje, skad sie wzielo argument.dom.wrapper?
       argument.dom.wrapper.remove();
       thisCart.update();
     }
 
     sendOrder(){
-      const thisCart = this;
-      //const url = settings.db.url + '/' + settings.db.order;
-      const payload = {};
-
-      /* 
-      products: tablica obecnych w koszyku produktów*/
+      const thisCart = this,
+        url = settings.db.url + '/' + settings.db.order,
+        payload = {};
+ 
       payload.address = thisCart.dom.addressWrapper.value;
       payload.phone = thisCart.dom.phoneWrapper.value;
       payload.totalPrice = thisCart.totalPrice;
       payload.subtotalPrice = thisCart.subtotalPrice;
       payload.totalNumber = thisCart.totalNumber;
       payload.deliveryFee = thisCart.deliveryFee;
-      payload.products = {};
+      payload.products = [];
+
+      for(let prod of thisCart.products) {
+        payload.products.push(prod.getData());
+      }
 
       console.log('wyslane do serwera: ', payload);
 
-      for(let prod of thisCart.products) {
-        payload.products.push(prod.getData()); //  payload.products.push is not a function
-      }
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      };
+      
+      fetch(url, options)
+        .then(function(response){
+          return response.json();
+        }).then(function(parsedResponse){
+          console.log('parsedResponse: ', parsedResponse);
+        });
     }
   }
 
@@ -471,7 +448,7 @@
       thisCartProduct.amount = menuProduct.amount;
       thisCartProduct.priceSingle = menuProduct.priceSingle;
       thisCartProduct.price = menuProduct.price;
-      thisCartProduct.params = menuProduct.productParams;
+      thisCartProduct.params = menuProduct.params;
 
       thisCartProduct.getElements(element);
       thisCartProduct.initAmountWidget();
@@ -507,42 +484,50 @@
 
     initAmountWidget() {
       const thisCartProduct = this;
+
       thisCartProduct.amountWidget = new amountWidget(thisCartProduct.dom.amountWidget);
+
       thisCartProduct.dom.amountWidget.addEventListener('updated', function() {
-        console.log('nacisniete ej');
-        // thisCartProduct.amount = thisCartProduct.amountWidget.value;
+        thisCartProduct.amount = thisCartProduct.amountWidget.value;
         thisCartProduct.price = thisCartProduct.priceSingle * thisCartProduct.amountWidget.value;
         thisCartProduct.dom.price.innerHTML = thisCartProduct.price;
       });
     }
 
     remove() {
-      const thisCartProduct = this;
-
-      const event = new CustomEvent('remove', {
+      const thisCartProduct = this,
+        event = new CustomEvent('remove', {
         bubbles: true,
         detail: {
           cartProduct: thisCartProduct,
         },
       });
+
       thisCartProduct.dom.wrapper.dispatchEvent(event);
     }
 
     getData(){
-      const thisCartProduct = this;
-      //params jest puste?? :O
-      console.log('thisCartProduct: ', thisCartProduct);
-      //id, amount, price, priceSingle, name i params.
+      const thisCartProduct = this,
+        products = {};
+      //console.log('thisCartProduct: ', thisCartProduct);
+
+      products.id = thisCartProduct.id;
+      products.amount = thisCartProduct.amount;
+      products.price = thisCartProduct.price;
+      products.priceSingle = thisCartProduct.priceSingle;
+      products.name = thisCartProduct.name;
+      products.params = thisCartProduct.params;
+      
+      return products;
     }
-    
   }
 
   const app = {
     initData: function(){
-      const thisApp = this;
+      const thisApp = this,
+        url = settings.db.url + '/' + settings.db.product;
 
       thisApp.data = {};
-      const url = settings.db.url + '/' + settings.db.product;
 
       fetch(url)
         .then(function(rawResponse){
@@ -550,10 +535,7 @@
         })
         .then(function(parsedResponse){
           console.log('parsedResponse: ', parsedResponse);
-
-          // save parsedResponse as thisApp.data.products
           thisApp.data.products = parsedResponse;
-          // execute initMenu method
           thisApp.initMenu();
         });
 
@@ -582,11 +564,12 @@
     },
 
     initCart: function(){
-      const thisApp = this;
+      const thisApp = this,
+        cartElem = document.querySelector(select.containerOf.cart);
 
-      const cartElem = document.querySelector(select.containerOf.cart);
       thisApp.cart = new Cart(cartElem);
     }
   };
+
   app.init();
 }
