@@ -68,14 +68,13 @@ const app = {
         thisApp.data.products = parsedResponse;
         thisApp.initMenu();
       });
-
-    //zwraca pusty obiekt?
+    //pusty obiekt?
     console.log('thisApp.data ', JSON.stringify(thisApp.data));
   },
 
   initMenu: function(){
     const thisApp = this;
-    console.log('thisappdata: ', thisApp.data);
+    //console.log('thisappdata: ', thisApp.data);
 
     for (let productData in thisApp.data.products) {
       new Product(thisApp.data.products[productData].id, thisApp.data.products[productData]);
