@@ -1,0 +1,35 @@
+.home {
+  .container {
+    margin: ($base-size * 3.5) auto;
+    padding: ($base-size * 6) ($base-size * 4);
+    background: $color-light;
+    border-bottom: 1px solid lighten($color-dark, 70%);
+    border-radius: $radius;
+  }
+
+  .card-img {
+    height: 120px;
+    object-fit: cover;
+  }
+
+  .opening-hours {
+    background-color: #ff6b6b;
+  }
+
+  .carousel-cell {
+    width: 100%;
+  }
+
+  .images-section {
+    .rounded {
+      height: 200px;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .insta {
+      color: #ff6b6b;
+    }
+  }
+}
+

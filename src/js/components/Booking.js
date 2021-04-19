@@ -201,12 +201,9 @@ class Booking{
     const thisBooking = this;
     const bookedTable = clickedTable.classList.contains(classNames.booking.tableBooked);
     const selectedTable = clickedTable.classList.contains(classNames.booking.selected);    
-    const allTables = thisBooking.dom.tablesWrapper.querySelectorAll(select.booking.tables);
+    thisBooking.bookedTableId = '';
 
-    // czy jest lepszy sposob niz kolejna petla? probowalem znalezc cos z allTables.children ale nie dzialalo to u mnie
-    for (let singleTable of allTables) {
-      if (singleTable.classList.contains(classNames.booking.selected)) singleTable.classList.remove(classNames.booking.selected);
-    }
+    if (clickedTable) clickedTable.classList.remove(classNames.booking.selected);
 
     if (clickedTable.classList.contains('table')) {
       if (!bookedTable && !selectedTable) {
@@ -215,7 +212,7 @@ class Booking{
       }
       else if (bookedTable) alert('Wybrano zajęty stolik');
     }
-    //console.log('tableId wybranego stolika: ', thisBooking.bookedTableId);
+    console.log('tableId wybranego stolika: ', thisBooking.bookedTableId);
   }
 
   sendBooking(){
@@ -248,16 +245,21 @@ class Booking{
       },
       body: JSON.stringify(payload),
     };
-      
-    fetch(url, options)
-      .then(function(response){
-        return response.json();
-      }).then(function(parsedResponse){
-        console.log('parsedResponse: ', parsedResponse);
-        thisBooking.makeBooked(payload.date, payload.hour, payload.duration, payload.table);
-        thisBooking.updateDOM();
-        alert('Zarezerwowano stolik numer ' + payload.table + ' na datę ' + payload.date + ', na ' + payload.duration + ' godzin, ilość osób ' + payload.ppl+ '. Zamówione przystawki to: ' + payload.starters);
-      });
+    
+    if (isNaN(payload.table) || payload.phone === '' || payload.address === ''){
+      alert('Proszę uzupełnić formularz przed wysłaniem rezerwacji');
+    }
+    else {      
+      fetch(url, options)
+        .then(function(response){
+          return response.json();
+        }).then(function(parsedResponse){
+          console.log('parsedResponse: ', parsedResponse);
+          thisBooking.makeBooked(payload.date, payload.hour, payload.duration, payload.table);
+          thisBooking.updateDOM();
+          alert('Zarezerwowano stolik numer ' + payload.table + ' na datę ' + payload.date + ', na ' + payload.duration + ' godzin, ilość osób ' + payload.ppl+ '. Zamówione przystawki to: ' + payload.starters);
+        });
+    }
   }
 }
 

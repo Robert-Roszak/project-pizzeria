@@ -3,6 +3,7 @@ import Product from './components/Product.js';
 import Cart from './components/Cart.js';
 import Booking from './components/Booking.js';
 
+
 const app = {
 
   initPages: function(){
@@ -11,7 +12,6 @@ const app = {
 
     thisApp.pages = document.querySelector(select.containerOf.pages).children;
     thisApp.navLinks = document.querySelectorAll(select.nav.links);
-    
     let pageMatchingHash = thisApp.pages[0].id;
 
     for (let page of thisApp.pages){
@@ -93,6 +93,7 @@ const app = {
     //thisApp.initMenu();
     thisApp.initCart();
     thisApp.initBooking();
+    thisApp.initHome();
   },
 
   initCart: function(){
@@ -112,6 +113,31 @@ const app = {
       bookingWrapper = document.querySelector(select.containerOf.booking);
     new Booking(bookingWrapper);
   },
+
+  initHome: function(){
+    const thisApp = this,
+      orderWrapper = document.querySelector(select.home.order),
+      bookingWrapper = document.querySelector(select.home.booking);
+
+    orderWrapper.addEventListener('click', function(){
+      thisApp.activatePage('order');
+    });
+
+    bookingWrapper.addEventListener('click', function(){
+      thisApp.activatePage('booking');
+    });
+
+    var elem = document.querySelector('.main-carousel');
+    new Flickity( elem, { // eslint-disable-line no-undef
+    // options
+      wrapAround: true,
+      autoPlay: true,
+      prevNextButtons: false,
+      dragThreshold: 40,
+      cellAlign: 'left',
+      contain: true
+    });
+  }
 };
 
 app.init();

@@ -70,6 +70,10 @@ export const select = {
   nav: {
     links: '.main-nav a',
   },
+  home: {
+    order: '.home .order',
+    booking: '.home .booking',
+  },
 };
 
 export const classNames = {
