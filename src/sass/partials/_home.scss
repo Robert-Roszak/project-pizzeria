@@ -7,6 +7,27 @@
     border-radius: $radius;
   }
 
+  .show-on-hover {
+    bottom: -200%;
+    transition: 0.5s all;
+    opacity: 0;
+  }
+
+  .move-effect:hover .show-on-hover {
+    transform: translate(-50%, -250%) !important;
+    transition: 0.5s all;
+    opacity: 1;
+  }
+
+  .move-effect:hover .smooth-hover {
+    transform: translateY(-50%) !important;
+    transition: 0.5s all;
+  }
+
+  .smooth-hover {
+    transition: 0.5s all;
+  }
+
   .card-img {
     height: 120px;
     object-fit: cover;
@@ -29,6 +50,27 @@
 
     .insta {
       color: #ff6b6b;
+    }
+
+    .fa-heart {
+      left: 40%;
+    }
+
+    .fa-share-alt {
+      left: 60%;
+    }
+
+    .fas {
+      opacity: 0;
+      transition: 0.5s all;
+
+      &:hover {
+        color: #ff6b6b !important;
+      }
+    }
+
+    .col-4:hover .fas {
+      opacity: 1;
     }
   }
 }
