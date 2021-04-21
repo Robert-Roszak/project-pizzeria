@@ -125,7 +125,7 @@ class Cart {
     fetch(url, options)
       .then(function(response){
         return response.json();
-      }).then(function(parsedResponse){
+      }).then(function(parsedResponse){ // eslint-disable-line no-unused-vars
         //console.log('parsedResponse: ', parsedResponse);
       });
   }

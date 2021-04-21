@@ -253,7 +253,7 @@ class Booking{
       fetch(url, options)
         .then(function(response){
           return response.json();
-        }).then(function(parsedResponse){
+        }).then(function(parsedResponse){ // eslint-disable-line no-unused-vars
           //console.log('parsedResponse: ', parsedResponse);
           thisBooking.makeBooked(payload.date, payload.hour, payload.duration, payload.table);
           thisBooking.updateDOM();
