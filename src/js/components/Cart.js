@@ -46,7 +46,6 @@ class Cart {
 
     thisCart.dom.form.addEventListener('submit', function(event){
       event.preventDefault();
-      console.log('clicked order');
       thisCart.sendOrder();
     });
   }
@@ -113,7 +112,7 @@ class Cart {
       payload.products.push(prod.getData());
     }
 
-    console.log('wyslane do serwera: ', payload);
+    //console.log('wyslane do serwera: ', payload);
 
     const options = {
       method: 'POST',
@@ -127,7 +126,7 @@ class Cart {
       .then(function(response){
         return response.json();
       }).then(function(parsedResponse){
-        console.log('parsedResponse: ', parsedResponse);
+        //console.log('parsedResponse: ', parsedResponse);
       });
   }
 }

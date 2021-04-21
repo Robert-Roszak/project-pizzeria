@@ -212,7 +212,7 @@ class Booking{
       }
       else if (bookedTable) alert('Wybrano zajęty stolik');
     }
-    console.log('tableId wybranego stolika: ', thisBooking.bookedTableId);
+    //console.log('tableId wybranego stolika: ', thisBooking.bookedTableId);
   }
 
   sendBooking(){
@@ -236,7 +236,7 @@ class Booking{
       }
     }
 
-    console.log('payload: ', payload);
+    //console.log('payload: ', payload);
 
     const options = {
       method: 'POST',
@@ -254,7 +254,7 @@ class Booking{
         .then(function(response){
           return response.json();
         }).then(function(parsedResponse){
-          console.log('parsedResponse: ', parsedResponse);
+          //console.log('parsedResponse: ', parsedResponse);
           thisBooking.makeBooked(payload.date, payload.hour, payload.duration, payload.table);
           thisBooking.updateDOM();
           alert('Zarezerwowano stolik numer ' + payload.table + ' na datę ' + payload.date + ', na ' + payload.duration + ' godzin, ilość osób ' + payload.ppl+ '. Zamówione przystawki to: ' + payload.starters);

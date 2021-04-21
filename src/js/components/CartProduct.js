@@ -19,12 +19,12 @@ class CartProduct {
     const thisCartProduct = this;
     thisCartProduct.dom.edit.addEventListener('click', function(event) {
       event.preventDefault();
-      console.log('clicked edit');
+      //console.log('clicked edit');
     });
 
     thisCartProduct.dom.remove.addEventListener('click', function(event){
       event.preventDefault();
-      console.log('clicked remove');
+      //console.log('clicked remove');
       thisCartProduct.remove();
     });
   }
@@ -66,7 +66,7 @@ class CartProduct {
   getData(){
     const thisCartProduct = this,
       products = {};
-      //console.log('thisCartProduct: ', thisCartProduct);
+    //console.log('thisCartProduct: ', thisCartProduct);
 
     products.id = thisCartProduct.id;
     products.amount = thisCartProduct.amount;

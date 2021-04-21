@@ -78,14 +78,18 @@ class Product{
   processOrder () {
     const thisProduct = this,
       formData = utils.serializeFormToObject(thisProduct.form);
+
     let price = thisProduct.data.price;
+
     for(let paramId in thisProduct.data.params) {
       const param = thisProduct.data.params[paramId];
+
       for(let optionId in param.options) {
         const option = param.options[optionId],
           imageParm = '.'+paramId+'-'+optionId,
           imageSelector = thisProduct.imageWrapper.querySelector(imageParm),
           optionSelected = formData[paramId].includes(optionId);
+          
         if (imageSelector) {
           if (!optionSelected) imageSelector.classList.remove(classNames.menuProduct.imageVisible);
           else imageSelector.classList.add(classNames.menuProduct.imageVisible);
@@ -112,6 +116,7 @@ class Product{
 
     for(let paramId in thisProduct.data.params) {
       const param = thisProduct.data.params[paramId];
+
       productParams[paramId] = {
         label: param.label,
         options: {}
@@ -130,12 +135,10 @@ class Product{
 
   addToCart(){
     const thisProduct = this;
-    //app.cart.add(thisProduct.prepareCartProduct());
 
     const event = new CustomEvent('add-to-cart', {
       bubbles: true,
       detail: {
-        //bylo inaczej w filmie i stracilem troche czasu jak do tego dojsc :(
         product: thisProduct.prepareCartProduct(),
       },
     });
@@ -146,6 +149,7 @@ class Product{
   prepareCartProduct(){
     const thisProduct = this,
       productSummary = {};  
+      
     productSummary.id = thisProduct.id;
     productSummary.name = thisProduct.data.name;
     productSummary.amount = thisProduct.amountWidget.value;
